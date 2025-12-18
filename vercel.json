@@ -1,9 +1,4 @@
 {
-  "version": 2,
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "@vercel/node"
-    }
-  }
+  "version": 2
 }
 

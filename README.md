@@ -72,7 +72,9 @@ Follow the prompts:
 - Which scope? (Select your account)
 - Link to existing project? **No**
 - Project name? (Press Enter for default: `loan-api`)
-- Directory? (Press Enter for current directory)
+- **Framework Preset?** Select **"Other"** or **"No Framework"**
+- Directory? (Press Enter for current directory: `./`)
+- Override settings? (Press Enter for No)
 
 ### Step 5: Set Up Vercel Postgres Database
 
@@ -272,9 +274,11 @@ loan-api/
 │   ├── db.js               # Database utilities
 │   └── auth.js             # Authentication utilities
 ├── package.json
-├── vercel.json             # Vercel configuration
+├── vercel.json             # Vercel configuration (minimal - auto-detects API routes)
 └── README.md
 ```
+
+**Note:** The `vercel.json` file is minimal. Vercel automatically detects API routes in the `api` folder and uses the correct Node.js runtime based on your `package.json`.
 
 ## Security Considerations
 
