@@ -237,7 +237,17 @@ Data must be encrypted using SM2 encryption before sending to the API.
 
 **Public Key**: `040c3700540ff36b73c1bb5f2f7c04c9ebd320348d87cc83ae501896b69660f2bf0c77b480f6dc284a39c752ba288d90145763f03bf78c4a92c67be68abe2f8298`
 
-**Encryption Mode**: C1C3C2 (Mode 1)
+**Encryption Mode**: C1C2C3 (Mode 0) - Matching Java `SM2Engine.Mode.C1C2C3`
+
+### How External API Decrypts
+
+The external API decrypts your encrypted data using:
+- **Private Key**: The private key that corresponds to the public key you use
+- **Decryption Method**: Java `decrypt2Data(privateKey, dataHex)` 
+- **Format**: Converts hex string to BCD format for decryption
+- **Mode**: C1C2C3 (same as encryption)
+
+**Important**: The public key you use for encryption must match the private key they use for decryption. This is a key pair relationship.
 
 ### Example Data Formats
 

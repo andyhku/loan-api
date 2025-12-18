@@ -216,7 +216,7 @@ async function handleBannerTest(req, res) {
       console.log('[Banner Test] Encrypted data length:', encryptedData.length);
       
       const response = await fetch(requestUrl, {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
