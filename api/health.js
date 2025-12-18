@@ -201,20 +201,32 @@ async function handleBannerTest(req, res) {
 
     // Call the getBannerList endpoint
     try {
-      const response = await fetch(`${EXTERNAL_API_BASE_URL}/integration/getBannerList`, {
+      const requestUrl = `${EXTERNAL_API_BASE_URL}/integration/getBannerList`;
+      const requestBody = {
+        appKey: DEFAULT_APP_KEY,
+        appSecret: DEFAULT_APP_SECRET,
+        encryptData: encryptedData
+      };
+      
+      console.log('[Banner Test] Calling external API:', requestUrl);
+      console.log('[Banner Test] Request method: POST');
+      console.log('[Banner Test] Request body keys:', Object.keys(requestBody));
+      console.log('[Banner Test] Encrypted data length:', encryptedData.length);
+      
+      const response = await fetch(requestUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({
-          appKey: DEFAULT_APP_KEY,
-          appSecret: DEFAULT_APP_SECRET,
-          encryptData: encryptedData
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log('[Banner Test] Response status:', response.status);
+      console.log('[Banner Test] Response headers:', Object.fromEntries(response.headers.entries()));
+      
       const responseData = await response.json();
+      console.log('[Banner Test] Response data:', JSON.stringify(responseData).substring(0, 200));
 
       if (response.ok) {
         return res.status(200).json({
@@ -229,17 +241,32 @@ async function handleBannerTest(req, res) {
           externalApiStatus: 'connected'
         });
       } else {
-        return res.status(response.status).json({
+        // Check if the error is about method not supported
+        const isMethodError = responseData.message && 
+          (responseData.message.includes('method') || 
+           responseData.message.includes('Method') ||
+           responseData.message.includes('POST') ||
+           responseData.message.includes('not supported'));
+        
+        return res.status(200).json({
           success: false,
           test: 'banner',
           message: 'External API returned error',
           request: {
             pagination: paginationData,
-            encryptedDataLength: encryptedData.length
+            encryptedDataLength: encryptedData.length,
+            method: 'POST',
+            url: requestUrl
           },
           response: responseData,
           externalApiStatus: 'error',
-          httpStatus: response.status
+          httpStatus: response.status,
+          troubleshooting: isMethodError ? {
+            note: 'External API returned "method not supported" error',
+            suggestion: 'Please verify the external API endpoint configuration. The API may require a different HTTP method or path.',
+            expectedMethod: 'POST',
+            actualResponse: responseData.message
+          } : null
         });
       }
     } catch (fetchError) {

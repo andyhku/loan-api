@@ -45,7 +45,13 @@ export default async function handler(req, res) {
     }
 
     // Forward request to external API
-    const externalResponse = await fetch(`${EXTERNAL_API_BASE_URL}/integration/getBannerList`, {
+    const requestUrl = `${EXTERNAL_API_BASE_URL}/integration/getBannerList`;
+    console.log('[GetBannerList] Calling external API:', requestUrl);
+    console.log('[GetBannerList] Request method: POST');
+    console.log('[GetBannerList] AppKey:', appKey);
+    console.log('[GetBannerList] EncryptData length:', encryptData ? encryptData.length : 0);
+    
+    const externalResponse = await fetch(requestUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,7 +64,12 @@ export default async function handler(req, res) {
       }),
     });
 
+    console.log('[GetBannerList] Response status:', externalResponse.status);
+    console.log('[GetBannerList] Response status text:', externalResponse.statusText);
+    
     const responseData = await externalResponse.json();
+    console.log('[GetBannerList] Response data code:', responseData.code);
+    console.log('[GetBannerList] Response data message:', responseData.message);
 
     // Return the response from external API
     if (externalResponse.ok) {
