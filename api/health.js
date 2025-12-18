@@ -1,15 +1,25 @@
 import { createClient } from "@libsql/client";
 import { encryptSM2, decryptSM2 } from "../lib/sm2-utils.js";
 
+const EXTERNAL_API_BASE_URL = process.env.EXTERNAL_API_BASE_URL || 'http://47.76.240.167:9999/asset/api';
+const DEFAULT_APP_KEY = 'Lq5bPzcnlcFuXst5Ca65Rb5r75mTmQoR';
+const DEFAULT_APP_SECRET = 'XtsGzJrFP88XpZmrpGVfsVNV5q2sYbR6';
+const DEFAULT_PUBLIC_KEY = '040c3700540ff36b73c1bb5f2f7c04c9ebd320348d87cc83ae501896b69660f2bf0c77b480f6dc284a39c752ba288d90145763f03bf78c4a92c67be68abe2f8298';
+
 const client = createClient({
   url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
 export default async function handler(req, res) {
-  // Check if this is an SM2 test request
-  if (req.method === 'GET' && req.query.test === 'sm2') {
-    return handleSM2Test(req, res);
+  // Check if this is a test request
+  if (req.method === 'GET' && req.query.test) {
+    if (req.query.test === 'sm2') {
+      return handleSM2Test(req, res);
+    }
+    if (req.query.test === 'banner') {
+      return handleBannerTest(req, res);
+    }
   }
 
   // Default health check
@@ -155,6 +165,102 @@ async function handleSM2Test(req, res) {
     return res.status(500).json({
       success: false,
       test: 'sm2',
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+}
+
+/**
+ * Handle Banner List API test
+ * Usage: GET /api/health?test=banner&current=1&size=10
+ * Or: GET /api/health?test=banner (uses default pagination)
+ */
+async function handleBannerTest(req, res) {
+  try {
+    const { current = '1', size = '10' } = req.query;
+
+    // Prepare pagination data
+    const paginationData = {
+      current: String(current),
+      size: String(size)
+    };
+
+    // Encrypt the pagination data
+    let encryptedData;
+    try {
+      encryptedData = encryptSM2(JSON.stringify(paginationData), DEFAULT_PUBLIC_KEY);
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        test: 'banner',
+        message: 'Failed to encrypt data',
+        error: error.message
+      });
+    }
+
+    // Call the getBannerList endpoint
+    try {
+      const response = await fetch(`${EXTERNAL_API_BASE_URL}/integration/getBannerList`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          appKey: DEFAULT_APP_KEY,
+          appSecret: DEFAULT_APP_SECRET,
+          encryptData: encryptedData
+        }),
+      });
+
+      const responseData = await response.json();
+
+      if (response.ok) {
+        return res.status(200).json({
+          success: true,
+          test: 'banner',
+          message: 'Banner list test successful',
+          request: {
+            pagination: paginationData,
+            encryptedDataLength: encryptedData.length
+          },
+          response: responseData,
+          externalApiStatus: 'connected'
+        });
+      } else {
+        return res.status(response.status).json({
+          success: false,
+          test: 'banner',
+          message: 'External API returned error',
+          request: {
+            pagination: paginationData,
+            encryptedDataLength: encryptedData.length
+          },
+          response: responseData,
+          externalApiStatus: 'error',
+          httpStatus: response.status
+        });
+      }
+    } catch (fetchError) {
+      return res.status(500).json({
+        success: false,
+        test: 'banner',
+        message: 'Failed to call external API',
+        request: {
+          pagination: paginationData,
+          encryptedDataLength: encryptedData ? encryptedData.length : 0
+        },
+        error: fetchError.message,
+        externalApiStatus: 'disconnected'
+      });
+    }
+
+  } catch (error) {
+    console.error('Banner test error:', error);
+    return res.status(500).json({
+      success: false,
+      test: 'banner',
       message: 'Internal server error',
       error: error.message
     });

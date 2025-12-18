@@ -56,7 +56,99 @@ All integration endpoints require:
 **Status Codes**:
 - `200`: Success
 - `400`: Missing required parameters
-- `405`: Method not allowed
+- `500`: Internal server error
+
+#### 0.2. Test Banner List API
+
+**Endpoint**: `GET /api/health?test=banner`
+
+**Description**: Test the `/api/integration/getBannerList` endpoint. This test will:
+1. Create pagination data
+2. Encrypt it using SM2
+3. Call the external API
+4. Return the response
+
+**Query Parameters**:
+- `test=banner`: Required to trigger banner test mode
+- `current`: Current page number (optional, default: "1")
+- `size`: Page size (optional, default: "10")
+
+**Examples**:
+
+1. **Default test** (page 1, size 10):
+   ```
+   GET /api/health?test=banner
+   ```
+
+2. **Custom pagination**:
+   ```
+   GET /api/health?test=banner&current=2&size=20
+   ```
+
+**Response**:
+```json
+{
+  "success": true,
+  "test": "banner",
+  "message": "Banner list test successful",
+  "request": {
+    "pagination": {
+      "current": "1",
+      "size": "10"
+    },
+    "encryptedDataLength": 256
+  },
+  "response": {
+    "code": 1,
+    "message": "success",
+    "data": {
+      "records": [
+        {
+          "id": "4e52354a41331edf292b10d5aea0971a",
+          "title": "221",
+          "position": 2,
+          "href": "www.baidu.com",
+          "sort": 1,
+          "status": 1,
+          "startTime": null,
+          "endTime": null,
+          "description": "22"
+        }
+      ],
+      "total": 1,
+      "size": 10,
+      "current": 1,
+      "pages": 1
+    }
+  },
+  "externalApiStatus": "connected"
+}
+```
+
+**Error Response**:
+```json
+{
+  "success": false,
+  "test": "banner",
+  "message": "External API returned error",
+  "request": {
+    "pagination": {
+      "current": "1",
+      "size": "10"
+    },
+    "encryptedDataLength": 256
+  },
+  "response": {
+    "code": 401,
+    "message": "Invalid credentials"
+  },
+  "externalApiStatus": "error",
+  "httpStatus": 401
+}
+```
+
+**Status Codes**:
+- `200`: Success (even if external API returns error, test endpoint returns 200 with error details)
 - `500`: Internal server error
 
 ### 1. Sync Loan Application Data
