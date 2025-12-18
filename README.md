@@ -129,14 +129,26 @@ TURSO_AUTH_TOKEN=your-auth-token-here
 
 After deployment, call the initialization endpoint to create the users table:
 
+**For Windows PowerShell:**
+```powershell
+# Replace YOUR_DOMAIN with your Vercel deployment URL
+Invoke-WebRequest -Method POST -Uri "https://YOUR_DOMAIN.vercel.app/api/init-db"
+```
+
+**For Command Prompt (cmd) or Git Bash:**
 ```bash
 # Replace YOUR_DOMAIN with your Vercel deployment URL
 curl -X POST https://YOUR_DOMAIN.vercel.app/api/init-db
 ```
 
-Or visit in browser:
+**Or visit in browser (GET request - may not work for POST):**
 ```
 https://YOUR_DOMAIN.vercel.app/api/init-db
+```
+
+**Or use Invoke-RestMethod (simpler, shows JSON response):**
+```powershell
+Invoke-RestMethod -Method POST -Uri "https://YOUR_DOMAIN.vercel.app/api/init-db"
 ```
 
 **Note**: This endpoint should be called once after first deployment. You may want to remove or protect this endpoint in production.
