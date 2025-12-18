@@ -18,25 +18,26 @@ All integration endpoints require:
 
 ### 0. Test SM2 Encryption (Testing Only)
 
-**Endpoint**: `GET /api/test-sm2`
+**Endpoint**: `GET /api/health?test=sm2`
 
-**Description**: Test SM2 encryption and decryption functionality. This endpoint is for testing purposes only.
+**Description**: Test SM2 encryption and decryption functionality. This endpoint is integrated into the health check endpoint to avoid creating additional serverless functions. This endpoint is for testing purposes only.
 
-**Query Parameters** (all optional):
-- `data`: Plain text to encrypt (default: "17601600216")
+**Query Parameters**:
+- `test=sm2`: Required to trigger SM2 test mode
+- `data`: Plain text to encrypt (optional, default: "17601600216")
 - `publicKey`: Public key for encryption (optional, uses default if not provided)
-- `privateKey`: Private key for decryption (required if testing decryption)
+- `privateKey`: Private key for decryption (optional, required if testing decryption)
 
 **Examples**:
 
 1. **Default test** (uses Java example data):
    ```
-   GET /api/test-sm2
+   GET /api/health?test=sm2
    ```
 
 2. **Custom test**:
    ```
-   GET /api/test-sm2?data=HelloWorld&publicKey=04...&privateKey=00...
+   GET /api/health?test=sm2&data=HelloWorld&publicKey=04...&privateKey=00...
    ```
 
 **Response**:
