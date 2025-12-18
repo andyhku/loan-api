@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client";
-import { encryptSM2, decryptSM2 } from "../lib/sm2-utils.js";
+import { encryptSM2, encrypt2Data, decryptSM2 } from "../lib/sm2-utils.js";
 
 const EXTERNAL_API_BASE_URL = process.env.EXTERNAL_API_BASE_URL || 'http://47.76.240.167:9999/asset/api';
 const DEFAULT_APP_KEY = 'Lq5bPzcnlcFuXst5Ca65Rb5r75mTmQoR';
@@ -186,10 +186,12 @@ async function handleBannerTest(req, res) {
       size: String(size)
     };
 
-    // Encrypt the pagination data
+    // Encrypt the pagination data using encrypt2Data (matching Java method)
+    // Java: encrypt2Data(publicKey, data)
     let encryptedData;
     try {
-      encryptedData = encryptSM2(JSON.stringify(paginationData), DEFAULT_PUBLIC_KEY);
+      const dataToEncrypt = JSON.stringify(paginationData);
+      encryptedData = encrypt2Data(DEFAULT_PUBLIC_KEY, dataToEncrypt);
     } catch (error) {
       return res.status(500).json({
         success: false,
