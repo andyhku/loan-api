@@ -15,7 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@vercel/postgres": "^0.5.1",
+    "@libsql/client": "^0.14.0",
     "bcryptjs": "^2.4.3"
   },
   "devDependencies": {

@@ -9,7 +9,7 @@ A simple, cost-effective API service for user authentication (login/register) de
 - ✅ Get User by ID
 - ✅ Health Check Endpoint
 - ✅ Password hashing with bcrypt
-- ✅ Vercel Postgres Database (Free Tier)
+- ✅ Turso Database (SQLite-based, Free Tier)
 - ✅ Serverless Functions (Auto-scaling)
 
 ## Cost Breakdown
@@ -22,16 +22,19 @@ A simple, cost-effective API service for user authentication (login/register) de
   - Automatic HTTPS
   - Global CDN
 
-- **Vercel Postgres**: Free tier includes:
-  - 256 MB storage
-  - 60 hours compute time/month
+- **Turso Database**: Free tier includes:
+  - 500 databases
+  - 2 billion rows read/month
+  - 50 million rows written/month
+  - 9 GB storage
   - Perfect for small to medium applications
 
 ## Prerequisites
 
 1. **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
 2. **Vercel Account** (Free) - [Sign up](https://vercel.com/signup)
-3. **Git** (Optional, for version control)
+3. **Turso Account** (Free) - [Sign up](https://turso.tech)
+4. **Git** (Optional, for version control)
 
 ## Step-by-Step Deployment Guide
 
@@ -76,31 +79,51 @@ Follow the prompts:
 - Directory? (Press Enter for current directory: `./`)
 - Override settings? (Press Enter for No)
 
-### Step 5: Set Up Vercel Postgres Database
+### Step 5: Set Up Turso Database
 
-#### Option A: Using Vercel Dashboard (Recommended)
+#### Create Turso Account and Database
+
+1. Go to [turso.tech](https://turso.tech) and sign up for a free account
+2. After logging in, create a new database:
+   ```bash
+   # Install Turso CLI (if not already installed)
+   curl -sSfL https://get.tur.so/install.sh | bash
+   
+   # Login to Turso
+   turso auth login
+   
+   # Create a new database
+   turso db create loan-api
+   ```
+3. Get your database URL and auth token:
+   ```bash
+   # Get database URL
+   turso db show loan-api --url
+   
+   # Create an auth token
+   turso db tokens create loan-api
+   ```
+
+#### Add Environment Variables to Vercel
 
 1. Go to your Vercel dashboard: [vercel.com/dashboard](https://vercel.com/dashboard)
 2. Select your project
-3. Go to **Storage** tab
-4. Click **Create Database**
-5. Select **Postgres**
-6. Choose **Free** plan
-7. Click **Create**
-8. The database credentials will be automatically added as environment variables
+3. Go to **Settings** → **Environment Variables**
+4. Add the following variables:
+   - `TURSO_DATABASE_URL` - Your Turso database URL (from step above)
+   - `TURSO_AUTH_TOKEN` - Your Turso auth token (from step above)
 
-#### Option B: Using Vercel CLI
-
+Or use Vercel CLI:
 ```bash
-vercel env add POSTGRES_URL
-vercel env add POSTGRES_PRISMA_URL
-vercel env add POSTGRES_USER
-vercel env add POSTGRES_HOST
-vercel env add POSTGRES_PASSWORD
-vercel env add POSTGRES_DATABASE
+vercel env add TURSO_DATABASE_URL
+vercel env add TURSO_AUTH_TOKEN
 ```
 
-You'll need to create a Postgres database first in the Vercel dashboard, then copy the connection strings.
+**For local development**, create a `.env.local` file:
+```
+TURSO_DATABASE_URL=libsql://your-database-url.turso.io
+TURSO_AUTH_TOKEN=your-auth-token-here
+```
 
 ### Step 6: Initialize Database
 
@@ -241,12 +264,8 @@ npm install
 2. Set up environment variables:
 Create a `.env.local` file:
 ```
-POSTGRES_URL=your_postgres_url
-POSTGRES_PRISMA_URL=your_postgres_prisma_url
-POSTGRES_USER=your_postgres_user
-POSTGRES_HOST=your_postgres_host
-POSTGRES_PASSWORD=your_postgres_password
-POSTGRES_DATABASE=your_postgres_database
+TURSO_DATABASE_URL=libsql://your-database-url.turso.io
+TURSO_AUTH_TOKEN=your-auth-token-here
 ```
 
 3. Run development server:
@@ -293,8 +312,9 @@ loan-api/
 ### Database Connection Issues
 
 1. Check environment variables in Vercel dashboard
-2. Ensure Postgres database is created and active
-3. Verify database credentials are correct
+2. Ensure Turso database is created and active
+3. Verify database URL and auth token are correct
+4. Make sure `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are set in Vercel environment variables
 
 ### Deployment Issues
 
@@ -312,14 +332,15 @@ loan-api/
 If you need more resources:
 
 - **Vercel Pro**: $20/month - More bandwidth, longer function timeouts
-- **Vercel Postgres Pro**: $20/month - More storage and compute time
+- **Turso Pro**: Starting at $29/month - More storage, rows, and databases
 
 ## Support
 
 For issues:
 1. Check Vercel logs: Dashboard → Your Project → Functions → View Logs
 2. Check Vercel documentation: [vercel.com/docs](https://vercel.com/docs)
-3. Check Postgres documentation: [vercel.com/docs/storage/vercel-postgres](https://vercel.com/docs/storage/vercel-postgres)
+3. Check Turso documentation: [docs.turso.tech](https://docs.turso.tech)
+4. Check Turso CLI: [docs.turso.tech/cli](https://docs.turso.tech/cli)
 
 ## License
 
