@@ -1,0 +1,25 @@
+{
+  "name": "loan-api",
+  "version": "1.0.0",
+  "description": "Simple API service for Loan App - Deployable to Vercel",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "api",
+    "vercel",
+    "serverless"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/postgres": "^0.5.1",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "vercel": "^34.0.0"
+  }
+}
+

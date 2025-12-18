@@ -1,0 +1,27 @@
+### Health Check
+GET https://YOUR_PROJECT_NAME.vercel.app/api/health
+
+### Initialize Database (Run once after first deployment)
+POST https://YOUR_PROJECT_NAME.vercel.app/api/init-db
+
+### Register User
+POST https://YOUR_PROJECT_NAME.vercel.app/api/users/register
+Content-Type: application/json
+
+{
+  "phone_number": "+1234567890",
+  "password": "password123"
+}
+
+### Login User
+POST https://YOUR_PROJECT_NAME.vercel.app/api/users/login
+Content-Type: application/json
+
+{
+  "phone_number": "+1234567890",
+  "password": "password123"
+}
+
+### Get User by ID (Replace 1 with actual user ID)
+GET https://YOUR_PROJECT_NAME.vercel.app/api/users/1
+
