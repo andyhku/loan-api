@@ -1,4 +1,7 @@
 {
-  "version": 2
+  "version": 2,
+  "env": {
+    "NODE_OPTIONS": "--no-deprecation"
+  }
 }
 
