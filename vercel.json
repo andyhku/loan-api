@@ -23,7 +23,7 @@
         },
         {
           "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization, X-Requested-With"
+          "value": "Content-Type, Authorization, X-Requested-With, Accept, Accept-Language, Accept-Encoding, User-Agent, Referer, Origin, Cache-Control, Pragma, X-Custom-Header, X-Request-ID, X-Client-Version, X-Platform, X-Device-ID, X-App-Version, X-Token, X-Session-ID, content-type, content-length, content-encoding, content-language, content-location, content-range, content-md5, content-disposition, X-Forwarded-For, X-Forwarded-Proto, X-Real-IP, Cookie, Set-Cookie"
         }
       ]
     },
@@ -40,7 +40,7 @@
         },
         {
           "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization, X-Requested-With"
+          "value": "Content-Type, Authorization, X-Requested-With, Accept, Accept-Language, Accept-Encoding, User-Agent, Referer, Origin, Cache-Control, Pragma, X-Custom-Header, X-Request-ID, X-Client-Version, X-Platform, X-Device-ID, X-App-Version, X-Token, X-Session-ID, content-type, content-length, content-encoding, content-language, content-location, content-range, content-md5, content-disposition, X-Forwarded-For, X-Forwarded-Proto, X-Real-IP, Cookie, Set-Cookie"
         }
       ]
     }
