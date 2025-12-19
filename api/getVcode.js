@@ -1,7 +1,16 @@
 import { saveVerificationCode } from '../lib/db.js';
 import { generateVerificationCode, sendVerificationCode } from '../lib/vcode.js';
+import { setCorsHeaders, handleOptions } from '../lib/cors.js';
 
 export default async function handler(req, res) {
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return handleOptions(req, res);
+  }
+
+  // Set CORS headers for all responses
+  setCorsHeaders(req, res);
+
   if (req.method !== 'POST') {
     return res.status(405).json({ 
       code: 405,
