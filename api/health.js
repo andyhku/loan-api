@@ -175,6 +175,7 @@ async function handleSM2Test(req, res) {
  * Handle Banner List API test
  * Usage: GET /api/health?test=banner&current=1&size=10
  * Or: GET /api/health?test=banner (uses default pagination)
+ * Note: Data is sent unencrypted as query parameters for GET requests
  */
 async function handleBannerTest(req, res) {
   try {
@@ -186,42 +187,24 @@ async function handleBannerTest(req, res) {
       size: String(size)
     };
 
-    // Encrypt the pagination data using encrypt2Data (matching Java method)
-    // Java: encrypt2Data(publicKey, data)
-    let encryptedData;
+    // Call the getBannerList endpoint with unencrypted data for GET request
     try {
-      const dataToEncrypt = JSON.stringify(paginationData);
-      encryptedData = encrypt2Data(DEFAULT_PUBLIC_KEY, dataToEncrypt);
-    } catch (error) {
-      return res.status(500).json({
-        success: false,
-        test: 'banner',
-        message: 'Failed to encrypt data',
-        error: error.message
+      // Build URL with query parameters for GET request (no encryption needed)
+      const urlParams = new URLSearchParams({
+        current: String(current),
+        size: String(size)
       });
-    }
-
-    // Call the getBannerList endpoint
-    try {
-      const requestUrl = `${EXTERNAL_API_BASE_URL}/integration/getBannerList`;
-      const requestBody = {
-        appKey: DEFAULT_APP_KEY,
-        appSecret: DEFAULT_APP_SECRET,
-        encryptData: encryptedData
-      };
+      const requestUrl = `${EXTERNAL_API_BASE_URL}/integration/getBannerList?${urlParams.toString()}`;
       
       console.log('[Banner Test] Calling external API:', requestUrl);
-      console.log('[Banner Test] Request method: POST');
-      console.log('[Banner Test] Request body keys:', Object.keys(requestBody));
-      console.log('[Banner Test] Encrypted data length:', encryptedData.length);
+      console.log('[Banner Test] Request method: GET');
+      console.log('[Banner Test] Pagination:', paginationData);
       
       const response = await fetch(requestUrl, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify(requestBody),
       });
 
       console.log('[Banner Test] Response status:', response.status);
@@ -236,8 +219,7 @@ async function handleBannerTest(req, res) {
           test: 'banner',
           message: 'Banner list test successful',
           request: {
-            pagination: paginationData,
-            encryptedDataLength: encryptedData.length
+            pagination: paginationData
           },
           response: responseData,
           externalApiStatus: 'connected'
@@ -256,8 +238,7 @@ async function handleBannerTest(req, res) {
           message: 'External API returned error',
           request: {
             pagination: paginationData,
-            encryptedDataLength: encryptedData.length,
-            method: 'POST',
+            method: 'GET',
             url: requestUrl
           },
           response: responseData,
@@ -266,7 +247,7 @@ async function handleBannerTest(req, res) {
           troubleshooting: isMethodError ? {
             note: 'External API returned "method not supported" error',
             suggestion: 'Please verify the external API endpoint configuration. The API may require a different HTTP method or path.',
-            expectedMethod: 'POST',
+            expectedMethod: 'GET',
             actualResponse: responseData.message
           } : null
         });
@@ -277,8 +258,7 @@ async function handleBannerTest(req, res) {
         test: 'banner',
         message: 'Failed to call external API',
         request: {
-          pagination: paginationData,
-          encryptedDataLength: encryptedData ? encryptedData.length : 0
+          pagination: paginationData
         },
         error: fetchError.message,
         externalApiStatus: 'disconnected'
