@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     let externalApiStatus = 'unknown';
     let externalApiError = null;
     try {
-      const externalResponse = await fetch('https://otp.accessyou-api.com/sendsms-otp.php?accountno=11036769&user=11036769&pwd=62199579&tid=1&a=123321&phone=85251738110', {
+      const externalResponse = await fetch('https://otp.accessyou-anyip.com/sendsms-otp.php?accountno=11036769&user=11036769&pwd=62199579&tid=1&a=123321&phone=85251738110', {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       database: 'connected',
       externalApi: {
         status: externalApiStatus,
-        url: 'https://otp.accessyou-api.com/sendsms-otp.php?accountno=11036769&user=11036769&pwd=62199579&tid=1&a=123321&phone=85251738110',
+        url: 'https://otp.accessyou-anyip.com/sendsms-otp.php?accountno=11036769&user=11036769&pwd=62199579&tid=1&a=123321&phone=85251738110',
         error: externalApiError
       }
     });
