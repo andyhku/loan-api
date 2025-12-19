@@ -1,6 +1,18 @@
-import { saveVerificationCode } from '../lib/db.js';
+import { saveVerificationCode, initDatabase } from '../lib/db.js';
 import { generateVerificationCode, sendVerificationCode } from '../lib/vcode.js';
 import { setCorsHeaders, handleOptions } from '../lib/cors.js';
+
+// Ensure database is initialized before operations
+// This is safe to call multiple times as CREATE TABLE IF NOT EXISTS is idempotent
+async function ensureDatabaseInitialized() {
+  try {
+    await initDatabase();
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    // Re-throw so the error can be handled by the caller
+    throw error;
+  }
+}
 
 export default async function handler(req, res) {
   // Handle preflight OPTIONS request
@@ -10,6 +22,9 @@ export default async function handler(req, res) {
 
   // Set CORS headers for all responses
   setCorsHeaders(req, res);
+
+  // Ensure database is initialized
+  await ensureDatabaseInitialized();
 
   if (req.method !== 'POST') {
     return res.status(405).json({ 
