@@ -191,6 +191,7 @@ async function handleBannerTest(req, res) {
     try {
       // Build URL with query parameters for GET request (no encryption needed)
       const urlParams = new URLSearchParams({
+        appKey: DEFAULT_APP_KEY,
         current: String(current),
         size: String(size)
       });
