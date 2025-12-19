@@ -208,7 +208,7 @@ async function handleBannerTest(req, res) {
       const urlParams = new URLSearchParams({
         appKey: DEFAULT_APP_KEY,
         appSecret: DEFAULT_APP_SECRET,
-        encryptData: encryptedData
+        encryptData: "04" + encryptedData
       });
       const requestUrl = `${EXTERNAL_API_BASE_URL}/integration/getBannerList?${urlParams.toString()}`;
       
