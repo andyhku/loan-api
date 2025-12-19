@@ -191,6 +191,7 @@ async function handleBannerTest(req, res) {
     let encryptedData;
     try {
       const dataToEncrypt = JSON.stringify(paginationData);
+      console.log('[Banner Test] Data to encrypt:', dataToEncrypt);
       encryptedData = encrypt2Data(DEFAULT_PUBLIC_KEY, dataToEncrypt);
     } catch (error) {
       return res.status(500).json({
