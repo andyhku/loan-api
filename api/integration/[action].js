@@ -14,6 +14,7 @@ import { encrypt2Data } from '../../lib/sm2-utils.js';
 import { formidable } from 'formidable';
 import FormData from 'form-data';
 import fs from 'fs';
+import fetch from 'node-fetch';
 
 const EXTERNAL_API_BASE_URL = process.env.EXTERNAL_API_BASE_URL || 'http://47.76.240.167:9999/asset/api';
 const DEFAULT_APP_KEY = 'Lq5bPzcnlcFuXst5Ca65Rb5r75mTmQoR';
@@ -260,13 +261,14 @@ async function handleUploadFile(req, res) {
       });
     }
     
-    // Use file stream for proper MultipartFile format
-    // form-data package expects a stream or buffer with filename option
-    const fileStream = fs.createReadStream(filePath);
+    // Read file as buffer for proper MultipartFile format
+    // Using buffer instead of stream for better compatibility with fetch API
+    const fileBuffer = fs.readFileSync(filePath);
     const filename = file.originalFilename || file.originalname || 'upload';
     const contentType = file.mimetype || file.type || 'application/octet-stream';
     
-    formData.append('file', fileStream, {
+    // Append file as buffer with proper options for multipart/form-data
+    formData.append('file', fileBuffer, {
       filename: filename,
       contentType: contentType,
     });
