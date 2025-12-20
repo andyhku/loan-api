@@ -245,6 +245,7 @@ async function handleUploadFile(req, res) {
     });
 
     // Create FormData for forwarding to external API
+    // Only include file and useType as per API requirements
     const formData = new FormData();
     
     // Read file and add to form data
@@ -266,8 +267,6 @@ async function handleUploadFile(req, res) {
       contentType: file.mimetype || file.type || 'application/octet-stream',
     });
     formData.append('useType', String(useType));
-    formData.append('appKey', DEFAULT_APP_KEY);
-    formData.append('appSecret', DEFAULT_APP_SECRET);
 
     // Forward request to external API
     const requestUrl = `${EXTERNAL_API_BASE_URL}/integration/upload/file`;
