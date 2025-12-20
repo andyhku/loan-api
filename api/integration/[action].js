@@ -248,7 +248,7 @@ async function handleUploadFile(req, res) {
     // Only include file and useType as per API requirements
     const formData = new FormData();
     
-    // Read file and add to form data
+    // Read file and add to form data as MultipartFile
     // In formidable v3, filepath might be 'path' or 'filepath'
     const filePath = file.filepath || file.path;
     
@@ -260,20 +260,24 @@ async function handleUploadFile(req, res) {
       });
     }
     
-    // Read file as buffer for better compatibility with serverless environments
-    const fileBuffer = fs.readFileSync(filePath);
-    formData.append('file', fileBuffer, {
-      filename: file.originalFilename || file.originalname || 'upload',
-      contentType: file.mimetype || file.type || 'application/octet-stream',
+    // Use file stream for proper MultipartFile format
+    // form-data package expects a stream or buffer with filename option
+    const fileStream = fs.createReadStream(filePath);
+    const filename = file.originalFilename || file.originalname || 'upload';
+    const contentType = file.mimetype || file.type || 'application/octet-stream';
+    
+    formData.append('file', fileStream, {
+      filename: filename,
+      contentType: contentType,
     });
     formData.append('useType', String(useType));
 
     // Forward request to external API
     const requestUrl = `${EXTERNAL_API_BASE_URL}/integration/upload/file`;
     console.log('[UploadFile] Calling external API:', requestUrl);
-    console.log('[UploadFile] File size:', fileBuffer.length, 'bytes');
-    console.log('[UploadFile] File name:', file.originalFilename || file.originalname);
-    console.log('[UploadFile] Content type:', file.mimetype || file.type);
+    console.log('[UploadFile] File name:', filename);
+    console.log('[UploadFile] File size:', file.size, 'bytes');
+    console.log('[UploadFile] Content type:', contentType);
     console.log('[UploadFile] UseType:', useType);
     
     try {
