@@ -1,13 +1,10 @@
 /**
- * POST /integration/getBannerList
+ * GET /integration/getBannerList
  * Get banner list from external API
  * 
- * Request body:
- * {
- *   "appKey": "应用id",
- *   "appSecret": "应用密钥",
- *   "encryptData": "加密数据"
- * }
+ * Query parameters:
+ * - current (int, optional): Page number, default: 1
+ * - size (int, optional): Page size, default: 100
  * 
  * Response:
  * {
@@ -24,46 +21,64 @@
  */
 
 import withCors from '../../lib/withCors.js';
+import { encrypt2Data } from '../../lib/sm2-utils.js';
 
 const EXTERNAL_API_BASE_URL = process.env.EXTERNAL_API_BASE_URL || 'http://47.76.240.167:9999/asset/api';
+const DEFAULT_APP_KEY = 'Lq5bPzcnlcFuXst5Ca65Rb5r75mTmQoR';
+const DEFAULT_APP_SECRET = 'XtsGzJrFP88XpZmrpGVfsVNV5q2sYbR6';
+const DEFAULT_PUBLIC_KEY = '040c3700540ff36b73c1bb5f2f7c04c9ebd320348d87cc83ae501896b69660f2bf0c77b480f6dc284a39c752ba288d90145763f03bf78c4a92c67be68abe2f8298';
 
 export default withCors(async function handler(req, res) {
-  if (req.method !== 'POST') {
+  if (req.method !== 'GET') {
     return res.status(405).json({ 
       code: 405, 
-      message: 'Method not allowed. Use POST.' 
+      message: 'Method not allowed. Use GET.' 
     });
   }
 
   try {
-    const { appKey, appSecret, encryptData } = req.body;
+    // Get pagination parameters with defaults
+    const { current = '1', size = '100' } = req.query;
 
-    // Validate required fields
-    if (!appKey || !appSecret || !encryptData) {
-      return res.status(400).json({
-        code: 400,
-        message: 'Missing required fields: appKey, appSecret, and encryptData are required'
+    // Prepare pagination data
+    const paginationData = {
+      current: String(current),
+      size: String(size)
+    };
+
+    // Encrypt the pagination data using encrypt2Data (matching Java method)
+    let encryptedData;
+    try {
+      const dataToEncrypt = JSON.stringify(paginationData);
+      console.log('[GetBannerList] Data to encrypt:', dataToEncrypt);
+      encryptedData = encrypt2Data(DEFAULT_PUBLIC_KEY, dataToEncrypt);
+    } catch (error) {
+      console.error('[GetBannerList] Encryption error:', error);
+      return res.status(500).json({
+        code: 500,
+        message: 'Failed to encrypt data',
+        error: error.message
       });
     }
 
-    // Forward request to external API
-    const requestUrl = `${EXTERNAL_API_BASE_URL}/integration/getBannerList`;
+    // Build URL with query parameters for GET request
+    const urlParams = new URLSearchParams({
+      appKey: DEFAULT_APP_KEY,
+      appSecret: DEFAULT_APP_SECRET,
+      encryptData: "04" + encryptedData
+    });
+    const requestUrl = `${EXTERNAL_API_BASE_URL}/integration/getBannerList?${urlParams.toString()}`;
+    
     console.log('[GetBannerList] Calling external API:', requestUrl);
-    console.log('[GetBannerList] Request method: POST');
-    console.log('[GetBannerList] AppKey:', appKey);
-    console.log('[GetBannerList] EncryptData length:', encryptData ? encryptData.length : 0);
+    console.log('[GetBannerList] Request method: GET');
+    console.log('[GetBannerList] Pagination:', paginationData);
+    console.log('[GetBannerList] Encrypted data length:', encryptedData.length);
     
     const externalResponse = await fetch(requestUrl, {
-      method: 'POST',
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        appKey,
-        appSecret,
-        encryptData
-      }),
     });
 
     console.log('[GetBannerList] Response status:', externalResponse.status);
