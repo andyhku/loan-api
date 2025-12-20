@@ -273,14 +273,25 @@ async function handleUploadFile(req, res) {
     const requestUrl = `${EXTERNAL_API_BASE_URL}/integration/upload/file`;
     console.log('[UploadFile] Calling external API:', requestUrl);
     console.log('[UploadFile] File size:', fileBuffer.length, 'bytes');
+    console.log('[UploadFile] File name:', file.originalFilename || file.originalname);
+    console.log('[UploadFile] Content type:', file.mimetype || file.type);
+    console.log('[UploadFile] UseType:', useType);
     
     try {
+      const headers = formData.getHeaders();
+      console.log('[UploadFile] Request headers:', headers);
+      
+      // Create AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       const externalResponse = await fetch(requestUrl, {
         method: 'POST',
-        headers: formData.getHeaders(),
+        headers: headers,
         body: formData,
+        signal: controller.signal,
       });
-
+      
       console.log('[UploadFile] Response status:', externalResponse.status);
       console.log('[UploadFile] Response status text:', externalResponse.statusText);
       
@@ -297,6 +308,9 @@ async function handleUploadFile(req, res) {
         console.warn('[UploadFile] Failed to cleanup temp file:', cleanupError);
       }
 
+      // Clear timeout on success
+      clearTimeout(timeoutId);
+
       // Return the response from external API
       if (externalResponse.ok) {
         return res.status(200).json(responseData);
@@ -308,7 +322,18 @@ async function handleUploadFile(req, res) {
         });
       }
     } catch (fetchError) {
-      console.error('[UploadFile] Fetch error:', fetchError);
+      // Clear timeout on error
+      if (typeof timeoutId !== 'undefined') {
+        clearTimeout(timeoutId);
+      }
+      
+      console.error('[UploadFile] Fetch error details:', {
+        name: fetchError.name,
+        message: fetchError.message,
+        stack: fetchError.stack,
+        cause: fetchError.cause,
+        url: requestUrl
+      });
       
       // Clean up temporary file even on error
       try {
@@ -319,10 +344,23 @@ async function handleUploadFile(req, res) {
         console.warn('[UploadFile] Failed to cleanup temp file:', cleanupError);
       }
       
+      // Provide more detailed error information
+      let errorMessage = 'Failed to forward request to external API';
+      if (fetchError.name === 'AbortError' || fetchError.message.includes('timeout')) {
+        errorMessage = 'Request to external API timed out';
+      } else if (fetchError.message.includes('ECONNREFUSED')) {
+        errorMessage = 'Cannot connect to external API - connection refused';
+      } else if (fetchError.message.includes('ENOTFOUND')) {
+        errorMessage = 'External API host not found';
+      } else if (fetchError.message.includes('ETIMEDOUT')) {
+        errorMessage = 'External API connection timed out';
+      }
+      
       return res.status(500).json({
         code: 500,
-        message: 'Failed to forward request to external API',
+        message: errorMessage,
         error: fetchError.message || 'fetch failed',
+        errorType: fetchError.name,
         data: null
       });
     }
