@@ -1,7 +1,8 @@
 import { getUserByPhone } from '../../lib/db.js';
 import { comparePassword } from '../../lib/auth.js';
+import withCors from '../../lib/withCors.js';
 
-export default async function handler(req, res) {
+export default withCors(async function handler(req, res) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ 
@@ -57,5 +58,5 @@ export default async function handler(req, res) {
       error: 'Internal server error. Please try again later.'
     });
   }
-}
+});
 

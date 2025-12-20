@@ -17,9 +17,11 @@
  * }
  */
 
+import withCors from '../../lib/withCors.js';
+
 const EXTERNAL_API_BASE_URL = process.env.EXTERNAL_API_BASE_URL || 'http://47.76.240.167:9999/asset/api';
 
-export default async function handler(req, res) {
+export default withCors(async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ 
       code: 405, 
@@ -73,5 +75,5 @@ export default async function handler(req, res) {
       data: null
     });
   }
-}
+});
 

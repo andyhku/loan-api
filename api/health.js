@@ -1,5 +1,6 @@
 import { createClient } from "@libsql/client";
 import { encryptSM2, encrypt2Data, decryptSM2 } from "../lib/sm2-utils.js";
+import withCors from '../lib/withCors.js';
 
 const EXTERNAL_API_BASE_URL = process.env.EXTERNAL_API_BASE_URL || 'http://47.76.240.167:9999/asset/api';
 const DEFAULT_APP_KEY = 'Lq5bPzcnlcFuXst5Ca65Rb5r75mTmQoR';
@@ -11,7 +12,7 @@ const client = createClient({
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
-export default async function handler(req, res) {
+export default withCors(async function handler(req, res) {
   // Check if this is a test request
   if (req.method === 'GET' && req.query.test) {
     if (req.query.test === 'sm2') {
@@ -69,7 +70,7 @@ export default async function handler(req, res) {
       error: error.message
     });
   }
-}
+});
 
 /**
  * Handle SM2 encryption/decryption test

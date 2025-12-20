@@ -1,6 +1,6 @@
 import { saveVerificationCode, initDatabase } from '../lib/db.js';
 import { generateVerificationCode, sendVerificationCode } from '../lib/vcode.js';
-import { setCorsHeaders, handleOptions } from '../lib/cors.js';
+import withCors from '../lib/withCors.js';
 
 // Ensure database is initialized before operations
 // This is safe to call multiple times as CREATE TABLE IF NOT EXISTS is idempotent
@@ -14,15 +14,7 @@ async function ensureDatabaseInitialized() {
   }
 }
 
-export default async function handler(req, res) {
-  // Handle preflight OPTIONS request
-  if (req.method === 'OPTIONS') {
-    return handleOptions(req, res);
-  }
-
-  // Set CORS headers for all responses
-  setCorsHeaders(req, res);
-
+export default withCors(async function handler(req, res) {
   // Ensure database is initialized
   await ensureDatabaseInitialized();
 
@@ -73,5 +65,5 @@ export default async function handler(req, res) {
       msg: '伺服器錯誤，請稍後再試'
     });
   }
-}
+});
 

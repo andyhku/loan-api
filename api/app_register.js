@@ -1,8 +1,9 @@
 import { createUser, getUserByAccount, getUserByPhone } from '../lib/db.js';
 import { hashPassword, validatePassword } from '../lib/auth.js';
 import { verifyCode } from '../lib/db.js';
+import withCors from '../lib/withCors.js';
 
-export default async function handler(req, res) {
+export default withCors(async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ 
       code: 405,
@@ -101,5 +102,5 @@ export default async function handler(req, res) {
       msg: '伺服器錯誤，請稍後再試'
     });
   }
-}
+});
 
