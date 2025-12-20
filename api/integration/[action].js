@@ -10,7 +10,7 @@
 
 import withCors from '../../lib/withCors.js';
 import { encrypt2Data } from '../../lib/sm2-utils.js';
-import formidable from 'formidable-serverless';
+import { formidable } from 'formidable';
 import FormData from 'form-data';
 import fs from 'fs';
 
@@ -192,16 +192,18 @@ async function handleSyncApplication(req, res) {
 async function handleUploadFile(req, res) {
   try {
     // Parse multipart form data
+    // Note: formidable v3 API is different - it returns an object with fields and files
     const form = formidable({
       maxFileSize: 50 * 1024 * 1024, // 50MB max file size
       keepExtensions: true,
     });
 
-    const [fields, files] = await form.parse(req);
+    const { fields, files } = await form.parse(req);
     
     // Extract file and useType
-    const file = Array.isArray(files.file) ? files.file[0] : files.file;
-    const useType = Array.isArray(fields.useType) ? fields.useType[0] : fields.useType;
+    // In formidable v3, fields and files are arrays by default
+    const file = files.file?.[0] || files.file;
+    const useType = fields.useType?.[0] || fields.useType;
 
     // Validate required fields
     if (!file) {
@@ -228,9 +230,10 @@ async function handleUploadFile(req, res) {
     }
 
     console.log('[UploadFile] File received:', {
-      originalFilename: file.originalFilename,
-      mimetype: file.mimetype,
+      originalFilename: file.originalFilename || file.originalname,
+      mimetype: file.mimetype || file.type,
       size: file.size,
+      filepath: file.filepath || file.path,
       useType: useType
     });
 
@@ -238,10 +241,12 @@ async function handleUploadFile(req, res) {
     const formData = new FormData();
     
     // Read file and add to form data
-    const fileStream = fs.createReadStream(file.filepath);
+    // In formidable v3, filepath might be 'path' or 'filepath'
+    const filePath = file.filepath || file.path;
+    const fileStream = fs.createReadStream(filePath);
     formData.append('file', fileStream, {
-      filename: file.originalFilename,
-      contentType: file.mimetype || 'application/octet-stream',
+      filename: file.originalFilename || file.originalname || 'upload',
+      contentType: file.mimetype || file.type || 'application/octet-stream',
     });
     formData.append('useType', String(useType));
     formData.append('appKey', DEFAULT_APP_KEY);
@@ -266,7 +271,10 @@ async function handleUploadFile(req, res) {
 
     // Clean up temporary file
     try {
-      fs.unlinkSync(file.filepath);
+      const filePath = file.filepath || file.path;
+      if (filePath) {
+        fs.unlinkSync(filePath);
+      }
     } catch (cleanupError) {
       console.warn('[UploadFile] Failed to cleanup temp file:', cleanupError);
     }
