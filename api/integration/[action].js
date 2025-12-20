@@ -250,8 +250,18 @@ async function handleUploadFile(req, res) {
     // Read file and add to form data
     // In formidable v3, filepath might be 'path' or 'filepath'
     const filePath = file.filepath || file.path;
-    const fileStream = fs.createReadStream(filePath);
-    formData.append('file', fileStream, {
+    
+    if (!filePath || !fs.existsSync(filePath)) {
+      console.error('[UploadFile] File path does not exist:', filePath);
+      return res.status(400).json({
+        code: 400,
+        message: 'File path is invalid or file does not exist'
+      });
+    }
+    
+    // Read file as buffer for better compatibility with serverless environments
+    const fileBuffer = fs.readFileSync(filePath);
+    formData.append('file', fileBuffer, {
       filename: file.originalFilename || file.originalname || 'upload',
       contentType: file.mimetype || file.type || 'application/octet-stream',
     });
@@ -262,38 +272,58 @@ async function handleUploadFile(req, res) {
     // Forward request to external API
     const requestUrl = `${EXTERNAL_API_BASE_URL}/integration/upload/file`;
     console.log('[UploadFile] Calling external API:', requestUrl);
+    console.log('[UploadFile] File size:', fileBuffer.length, 'bytes');
     
-    const externalResponse = await fetch(requestUrl, {
-      method: 'POST',
-      headers: formData.getHeaders(),
-      body: formData,
-    });
-
-    console.log('[UploadFile] Response status:', externalResponse.status);
-    console.log('[UploadFile] Response status text:', externalResponse.statusText);
-    
-    const responseData = await externalResponse.json();
-    console.log('[UploadFile] Response data code:', responseData.code);
-    console.log('[UploadFile] Response data message:', responseData.message);
-
-    // Clean up temporary file
     try {
-      const filePath = file.filepath || file.path;
-      if (filePath) {
-        fs.unlinkSync(filePath);
-      }
-    } catch (cleanupError) {
-      console.warn('[UploadFile] Failed to cleanup temp file:', cleanupError);
-    }
+      const externalResponse = await fetch(requestUrl, {
+        method: 'POST',
+        headers: formData.getHeaders(),
+        body: formData,
+      });
 
-    // Return the response from external API
-    if (externalResponse.ok) {
-      return res.status(200).json(responseData);
-    } else {
-      return res.status(externalResponse.status).json({
-        code: externalResponse.status,
-        message: responseData.message || 'External API error',
-        data: responseData.data || null
+      console.log('[UploadFile] Response status:', externalResponse.status);
+      console.log('[UploadFile] Response status text:', externalResponse.statusText);
+      
+      const responseData = await externalResponse.json();
+      console.log('[UploadFile] Response data code:', responseData.code);
+      console.log('[UploadFile] Response data message:', responseData.message);
+
+      // Clean up temporary file
+      try {
+        if (filePath) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (cleanupError) {
+        console.warn('[UploadFile] Failed to cleanup temp file:', cleanupError);
+      }
+
+      // Return the response from external API
+      if (externalResponse.ok) {
+        return res.status(200).json(responseData);
+      } else {
+        return res.status(externalResponse.status).json({
+          code: externalResponse.status,
+          message: responseData.message || 'External API error',
+          data: responseData.data || null
+        });
+      }
+    } catch (fetchError) {
+      console.error('[UploadFile] Fetch error:', fetchError);
+      
+      // Clean up temporary file even on error
+      try {
+        if (filePath) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (cleanupError) {
+        console.warn('[UploadFile] Failed to cleanup temp file:', cleanupError);
+      }
+      
+      return res.status(500).json({
+        code: 500,
+        message: 'Failed to forward request to external API',
+        error: fetchError.message || 'fetch failed',
+        data: null
       });
     }
 
