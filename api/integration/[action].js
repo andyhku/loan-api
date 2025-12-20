@@ -201,7 +201,11 @@ async function handleUploadFile(req, res) {
       keepExtensions: true,
     });
 
-    const { fields, files } = await form.parse(req);
+    // formidable v3 parse returns [fields, files] as an array, not an object
+    const [fields, files] = await form.parse(req);
+    
+    console.log('[UploadFile] Fields:', fields);
+    console.log('[UploadFile] Files:', files);
     
     // Extract file and useType
     // In formidable v3, fields and files are arrays by default
