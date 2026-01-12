@@ -16,6 +16,98 @@ const DEFAULT_APP_KEY = 'Lq5bPzcnlcFuXst5Ca65Rb5r75mTmQoR';
 const DEFAULT_APP_SECRET = 'XtsGzJrFP88XpZmrpGVfsVNV5q2sYbR6';
 const DEFAULT_PUBLIC_KEY = '040c3700540ff36b73c1bb5f2f7c04c9ebd320348d87cc83ae501896b69660f2bf0c77b480f6dc284a39c752ba288d90145763f03bf78c4a92c67be68abe2f8298';
 
+/**
+ * Transform new format to old API format
+ * Maps camelCase fields to the format expected by external API
+ */
+function transformToOldFormat(data) {
+  return {
+    // Basic information
+    Referral_Code: data.salesmanReferralCode || '',
+    customer_name: data.customerName || '',
+    customer_phone: data.customerPhone || '',
+    apply_limit: String(data.loanAmount || ''),
+    sex: data.customerGender || '1',
+    customer_account: data.customerPhone || '', // Use phone as account
+    
+    // Customer photos (file IDs array)
+    customer_photos: data.customerPhotos || [],
+    
+    // Debt records - transform to old format
+    Debt_record: data.debts?.map(debt => ({
+      jieqianrenname: debt.name || '',
+      jine: String(debt.amount || ''),
+      qishu: String(debt.period || ''),
+      yuxiaqishu: String(debt.remainingPeriod || '')
+    })) || [],
+    
+    // Company information
+    company_information: {
+      gongsiming: data.customerCompanyName || '',
+      dizhi: data.customerCompanyAddress || '',
+      dianhua: data.customerCompanyPhone || '',
+      zhiwei: data.customerCompanyPosition || '',
+      shouru: String(data.customerIncome || ''),
+      gongzuonianxian: String(data.customerWorkYears || ''),
+      isor: data.isCustomerOwnCompany || ''
+    },
+    
+    // Personal data
+    personal_data: {
+      customer_phone: data.customerPhone || '',
+      shenfenzheng: data.customerIdCard || '',
+      chushengriqi: data.customerBirthDate || '',
+      nianling: String(data.customerAge || ''),
+      youtiqu: data.hasProvidentFundExtraction || '',
+      qiangjijin: data.providentFundTrustee || '',
+      juzhudizhi: data.customerResidentialAddress || '',
+      zhuzhaileixing: data.customerResidentialType || '',
+      zhuzaidianhua: data.customerResidentialPhone || '',
+      juzhunianshu: String(data.customerResidentialYears || ''),
+      shifougoumai: data.isCustomerHouseOwned || '',
+      wuzhuxingming: data.houseOwnerName || '',
+      youwuchanquan: data.hasBankruptcy || '',
+      youwuzoushu: data.hasBadCredit || ''
+    },
+    
+    // Receiving bank
+    receiving_bank: {
+      zhanghao: data.receivingBankCode || '',
+      bank_name: data.receivingBankName || '',
+      shoukuanrenming: data.receivingAccountName || ''
+    },
+    
+    // Contact persons - combine cohabitants and non-cohabitants
+    contact_person: [
+      ...(data.cohabitants?.map(person => ({
+        contact_person_name: person.name || '',
+        dianhua: person.phone || '',
+        guanxi: person.relationship || '',
+        nianling: String(person.age || ''),
+        gongzuodizhi: person.workAddress || '',
+        gongzuodianhua: person.workPhone || '',
+        type: 'cohabitant'
+      })) || []),
+      ...(data.nonCohabitants?.map(person => ({
+        contact_person_name: person.name || '',
+        dianhua: person.phone || '',
+        guanxi: person.relationship || '',
+        nianling: String(person.age || ''),
+        gongzuodizhi: person.workAddress || '',
+        gongzuodianhua: person.workPhone || '',
+        type: 'nonCohabitant'
+      })) || [])
+    ],
+    
+    // Phone book list - stored as notes or separate field
+    notes: data.customerPhoneBookList ? JSON.stringify(data.customerPhoneBookList) : '',
+    
+    // Additional files
+    monthlyStatements: data.monthlyStatements || [],
+    loanApplicationOtherFiles: data.loanApplicationOtherFiles || []
+  };
+}
+
 export default withCors(async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ 
@@ -67,15 +159,19 @@ export default withCors(async function handler(req, res) {
       });
     }
 
-    console.log('[AppAddInformation] Application data:', JSON.stringify(applicationData, null, 2));
+    console.log('[AppAddInformation] Original application data:', JSON.stringify(applicationData, null, 2));
+
+    // Transform data to old API format
+    const transformedData = transformToOldFormat(applicationData);
+    console.log('[AppAddInformation] Transformed data:', JSON.stringify(transformedData, null, 2));
 
     // Encrypt the application data using SM2
     let encryptedData;
     try {
-      const dataToEncrypt = JSON.stringify(applicationData);
-      console.log('[AppAddInformation] Data to encrypt:', dataToEncrypt);
+      const dataToEncrypt = JSON.stringify(transformedData);
+      console.log('[AppAddInformation] Data to encrypt length:', dataToEncrypt.length);
       encryptedData = encrypt2Data(DEFAULT_PUBLIC_KEY, dataToEncrypt);
-      console.log('[AppAddInformation] Encryption successful, length:', encryptedData.length);
+      console.log('[AppAddInformation] Encryption successful, encrypted length:', encryptedData.length);
     } catch (error) {
       console.error('[AppAddInformation] Encryption error:', error);
       return res.status(200).json({
