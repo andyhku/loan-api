@@ -1,4 +1,4 @@
-import { initDatabase } from '../../lib/db.js';
+import { initDatabase } from '../lib/db.js';
 import withCors from '../lib/withCors.js';
 
 export default withCors(async function handler(req, res) {
