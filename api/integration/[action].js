@@ -99,6 +99,7 @@ async function handleGetBannerList(req, res) {
     console.log('[GetBannerList] Calling external API:', requestUrl);
     console.log('[GetBannerList] Request method: GET');
     console.log('[GetBannerList] Pagination:', paginationData);
+    console.log('[GetBannerList] Encrypted data:', encryptedData);
     console.log('[GetBannerList] Encrypted data length:', encryptedData.length);
     
     const externalResponse = await fetch(requestUrl, {
