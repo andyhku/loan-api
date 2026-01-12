@@ -159,20 +159,16 @@ export default withCors(async function handler(req, res) {
       });
     }
 
-    console.log('[AppAddInformation] Original application data:', JSON.stringify(applicationData, null, 2));
+    console.log('[AppAddInformation] Application data (new format - no transformation):', JSON.stringify(applicationData, null, 2));
 
-    // Transform data to old API format
-    const transformedData = transformToOldFormat(applicationData);
-    console.log('[AppAddInformation] Transformed data:', JSON.stringify(transformedData, null, 2));
-
-    // Encrypt the application data using SM2
+    // Encrypt the application data using SM2 (send new format directly)
     let encryptedData;
     try {
-      const dataToEncrypt = JSON.stringify(transformedData);
+      const dataToEncrypt = JSON.stringify(applicationData);
       console.log('[AppAddInformation] Data to encrypt length:', dataToEncrypt.length);
       encryptedData = encrypt2Data(DEFAULT_PUBLIC_KEY, dataToEncrypt);
       console.log('[AppAddInformation] Encryption successful, encrypted length:', encryptedData.length);
-      console.log('[AppAddInformation] Encrypted data:', "04" + encryptedData);
+      console.log('[AppAddInformation] Encrypted data preview:', ("04" + encryptedData));
     } catch (error) {
       console.error('[AppAddInformation] Encryption error:', error);
       return res.status(200).json({
