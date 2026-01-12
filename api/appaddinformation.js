@@ -172,6 +172,7 @@ export default withCors(async function handler(req, res) {
       console.log('[AppAddInformation] Data to encrypt length:', dataToEncrypt.length);
       encryptedData = encrypt2Data(DEFAULT_PUBLIC_KEY, dataToEncrypt);
       console.log('[AppAddInformation] Encryption successful, encrypted length:', encryptedData.length);
+      console.log('[AppAddInformation] Encrypted data:', "04" + encryptedData);
     } catch (error) {
       console.error('[AppAddInformation] Encryption error:', error);
       return res.status(200).json({
