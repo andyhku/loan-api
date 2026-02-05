@@ -11,7 +11,8 @@ export default withCors(async function handler(req, res) {
   const baseUrl = `${protocol}://${host}`;
   
   // APK file path - update this to your actual APK file location
-  const apkUrl = process.env.APK_DOWNLOAD_URL || '/download/tc-app-v114.apk';
+  // File is in public folder, so it's accessible directly at root
+  const apkUrl = process.env.APK_DOWNLOAD_URL || '/tc-app-v114.apk';
   const appName = process.env.APP_NAME || 'TC 應用程式';
   const appVersion = process.env.APP_VERSION || '1.1.14';
   const appDescription = process.env.APP_DESCRIPTION || '下載並安裝我們的 Android 應用程式';
