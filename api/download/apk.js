@@ -5,17 +5,62 @@ export default withCors(async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Get base URL for absolute paths
+  const protocol = req.headers['x-forwarded-proto'] || 'https';
+  const host = req.headers['x-forwarded-host'] || req.headers.host || 'your-domain.vercel.app';
+  const baseUrl = `${protocol}://${host}`;
+  
   // APK file path - update this to your actual APK file location
   const apkUrl = process.env.APK_DOWNLOAD_URL || '/download/app.apk';
-  const appName = process.env.APP_NAME || 'Loan App';
+  const appName = process.env.APP_NAME || '貸款應用程式';
   const appVersion = process.env.APP_VERSION || '1.0.0';
+  const appDescription = process.env.APP_DESCRIPTION || '下載並安裝我們的 Android 應用程式';
+  
+  // Icon URL - using absolute URL for social media sharing
+  // Vercel serves files from public folder as static assets
+  const iconUrl = `${baseUrl}/192x192.png`;
+  const pageUrl = `${baseUrl}${req.url}`;
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download ${appName} APK</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>下載 ${appName} APK</title>
+    <meta name="title" content="下載 ${appName} APK">
+    <meta name="description" content="${appDescription}。立即下載 Android APK 安裝檔，享受完整的應用程式功能。">
+    <meta name="keywords" content="APK下載, Android應用程式, 貸款應用程式, 手機應用程式">
+    <meta name="author" content="${appName}">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="${pageUrl}">
+    <meta property="og:title" content="下載 ${appName} APK">
+    <meta property="og:description" content="${appDescription}。立即下載 Android APK 安裝檔，享受完整的應用程式功能。">
+    <meta property="og:image" content="${iconUrl}">
+    <meta property="og:image:width" content="192">
+    <meta property="og:image:height" content="192">
+    <meta property="og:image:alt" content="${appName} 應用程式圖示">
+    <meta property="og:site_name" content="${appName}">
+    <meta property="og:locale" content="zh_TW">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:url" content="${pageUrl}">
+    <meta name="twitter:title" content="下載 ${appName} APK">
+    <meta name="twitter:description" content="${appDescription}。立即下載 Android APK 安裝檔。">
+    <meta name="twitter:image" content="${iconUrl}">
+    <meta name="twitter:image:alt" content="${appName} 應用程式圖示">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="${iconUrl}">
+    <link rel="icon" type="image/png" href="${iconUrl}">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="${pageUrl}">
     <style>
         * {
             margin: 0;
@@ -44,15 +89,18 @@ export default withCors(async function handler(req, res) {
         }
         
         .icon {
-            width: 80px;
-            height: 80px;
+            width: 120px;
+            height: 120px;
             margin: 0 auto 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         h1 {
@@ -134,31 +182,33 @@ export default withCors(async function handler(req, res) {
 </head>
 <body>
     <div class="container">
-        <div class="icon">📱</div>
-        <h1>Download ${appName}</h1>
-        <p class="subtitle">Android APK Installation</p>
+        <div class="icon">
+            <img src="${iconUrl}" alt="${appName} 圖示" />
+        </div>
+        <h1>下載 ${appName}</h1>
+        <p class="subtitle">Android APK 安裝</p>
         
         <a href="${apkUrl}" class="download-btn" download>
-            Download APK
+            下載 APK
         </a>
         
         <div class="info-box">
-            <h3>Installation Instructions:</h3>
+            <h3>安裝說明：</h3>
             <ol>
-                <li>Click "Download APK" and save the file to your Android device.</li>
-                <li>Open your device's Settings app and navigate to Security or Privacy settings.</li>
-                <li>Enable "Install from Unknown Sources" or "Install Unknown Apps" (the exact option name may vary by device).</li>
-                <li>Locate the downloaded APK file using a file manager app.</li>
-                <li>Tap on the APK file to begin the installation process.</li>
-                <li>Follow the on-screen prompts to complete the installation.</li>
+                <li>點擊「下載 APK」並將檔案儲存到您的 Android 裝置。</li>
+                <li>開啟裝置的「設定」應用程式，前往「安全性」或「隱私權」設定。</li>
+                <li>啟用「允許安裝未知來源的應用程式」或「安裝未知應用程式」（選項名稱可能因裝置而異）。</li>
+                <li>使用檔案管理應用程式找到下載的 APK 檔案。</li>
+                <li>點擊 APK 檔案開始安裝程序。</li>
+                <li>按照螢幕上的提示完成安裝。</li>
             </ol>
             
             <div class="warning">
-                <strong>⚠️ Security Note:</strong> Installing APK files from unknown sources may pose security risks. Only download from trusted sources.
+                <strong>⚠️ 安全提示：</strong> 從未知來源安裝 APK 檔案可能存在安全風險。請僅從可信來源下載。
             </div>
         </div>
         
-        <p class="version">Version ${appVersion}</p>
+        <p class="version">版本 ${appVersion}</p>
     </div>
 </body>
 </html>`;
