@@ -11,9 +11,9 @@ export default withCors(async function handler(req, res) {
   const baseUrl = `${protocol}://${host}`;
   
   // APK file path - update this to your actual APK file location
-  const apkUrl = process.env.APK_DOWNLOAD_URL || '/download/app.apk';
-  const appName = process.env.APP_NAME || '貸款應用程式';
-  const appVersion = process.env.APP_VERSION || '1.0.0';
+  const apkUrl = process.env.APK_DOWNLOAD_URL || '/download/tc-app-v114.apk';
+  const appName = process.env.APP_NAME || 'TC 應用程式';
+  const appVersion = process.env.APP_VERSION || '1.1.14';
   const appDescription = process.env.APP_DESCRIPTION || '下載並安裝我們的 Android 應用程式';
   
   // Icon URL - using absolute URL for social media sharing
@@ -31,7 +31,7 @@ export default withCors(async function handler(req, res) {
     <title>下載 ${appName} APK</title>
     <meta name="title" content="下載 ${appName} APK">
     <meta name="description" content="${appDescription}。立即下載 Android APK 安裝檔，享受完整的應用程式功能。">
-    <meta name="keywords" content="APK下載, Android應用程式, 貸款應用程式, 手機應用程式">
+    <meta name="keywords" content="APK下載, Android應用程式, 應用程式, 手機應用程式">
     <meta name="author" content="${appName}">
     <meta name="robots" content="index, follow">
     
@@ -202,10 +202,6 @@ export default withCors(async function handler(req, res) {
                 <li>點擊 APK 檔案開始安裝程序。</li>
                 <li>按照螢幕上的提示完成安裝。</li>
             </ol>
-            
-            <div class="warning">
-                <strong>⚠️ 安全提示：</strong> 從未知來源安裝 APK 檔案可能存在安全風險。請僅從可信來源下載。
-            </div>
         </div>
         
         <p class="version">版本 ${appVersion}</p>
