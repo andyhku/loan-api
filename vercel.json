@@ -7,6 +7,10 @@
     {
       "source": "/getVcode",
       "destination": "/api/getVcode"
+    },
+    {
+      "source": "/download/apk",
+      "destination": "/api/download/apk"
     }
   ],
   "headers": [
