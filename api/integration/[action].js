@@ -286,6 +286,7 @@ async function handleUploadFile(req, res) {
     try {
       const headers = formData.getHeaders();
       console.log('[UploadFile] Request headers:', headers);
+      console.log('[UploadFile] Request body:', formData);
       
       // Create AbortController for timeout handling
       const controller = new AbortController();
